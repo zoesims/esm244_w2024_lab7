@@ -1,0 +1,468 @@
+---
+title: 'Datasets for examples and lab'
+author: "Casey O’Hara"
+date: "2024-02-15"
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    toc: true
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(tidyverse)
+library(here)
+library(tidymodels)
+library(GGally)
+library(jtools)
+library(AICcmodavg)
+```
+
+# Overview
+
+Using possum data, plastics in Lahore data, and penguins data, create figures for lecture.
+
+# Sheep data
+
+Allison's original example used a fictional dataset of male sheep success in finding a mate, as a function of their weight.  Let's recreate that.
+
+```{r}
+set.seed(12)
+sheep_mate_df <- data.frame(success = sample(c(1, 0), 60, replace = TRUE)) %>%
+  mutate(weight = rnorm(mean = 140, sd = 15, n = n()) + 30 * success)
+
+ggplot(sheep_mate_df, aes(x = weight, y = success)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = 'Sheep weight (lbs)',
+       y = 'Mating success')
+```
+
+```{r sheep linear model}
+lm1 <- lm(success ~ weight, data = sheep_mate_df)
+ggplot(sheep_mate_df, aes(x = weight, y = success)) +
+  geom_point() +
+  geom_abline(intercept = lm1$coefficients[1],
+              slope = lm1$coefficients[2], color = 'red') +
+  theme_minimal() +
+  scale_y_continuous(breaks = c(0, 1)) +
+  labs(x = 'Sheep weight (lbs)',
+       y = 'Mating success')
+```
+
+linear model not great for predicting categorical values.
+
+## Binary logistic regression
+
+Plotting as a straight line, the y axis is essentially $\ln\left(\frac{p_M}{1-p_M}\right)$
+```{r}
+blr1 <- glm(success ~ weight, data = sheep_mate_df, family = 'binomial')
+
+ggplot(sheep_mate_df, aes(x = weight, y = success)) +
+  geom_point() +
+  geom_abline(intercept = blr1$coefficients[1],
+              slope = blr1$coefficients[2], color = 'red') +
+  theme_minimal() +
+  scale_y_continuous(breaks = c(0, 1)) +
+  labs(x = 'Sheep weight (lbs)',
+       y = 'log odds: ln p/(1-p)')
+```
+
+Y axis labeled with log odds
+```{r}
+logodds_breaks <- log(c(.01, .1, 1, 10, 100))
+logodds_labels <- c('log(1:100)', 'log(1:10)', 'log(1:1)', 'log(10:1)', 'log(100:1)')
+ggplot(sheep_mate_df, aes(x = weight, y = success)) +
+  geom_point() +
+  geom_abline(intercept = blr1$coefficients[1],
+              slope = blr1$coefficients[2], color = 'red') +
+  theme_minimal() +
+  scale_y_continuous(breaks = logodds_breaks, 
+                     labels = logodds_labels, 
+                     limits = range(logodds_breaks)) +
+  labs(x = 'Sheep weight (lbs)',
+       y = 'log odds: ln p/(1-p)')
+
+```
+
+```{r}
+pred_blr1 <- data.frame(weight = 100:220) %>%
+  mutate(prob_success = predict(blr1, ., type = 'response'))
+
+ggplot(sheep_mate_df, aes(x = weight, y = success)) +
+  geom_point() +
+  geom_line(data = pred_blr1, aes(y = prob_success), color = 'red') +
+  theme_minimal() +
+  scale_y_continuous(breaks = c(0, 1), 
+                     labels = c(0, 1)) +
+  labs(x = 'Sheep weight (lbs)',
+       y = 'Probability of success')
+```
+
+# Possum data
+
+![](`r here('data/possums/mountain_brushtail_possum.jpeg'`)
+
+## Metadata:
+
+**Content:** From the DAAG R package: "The possum data frame consists of nine morphometric measurements on each of 104 mountain brushtail possums, trapped at seven sites from Southern Victoria to central Queensland."
+
+**Original Source of dataset:** Lindenmayer, D. B., Viggers, K. L., Cunningham, R. B., and Donnelly, C. F. 1995. Morphological variation among columns of the mountain brushtail possum, Trichosurus caninus Ogilby (Phalangeridae: Marsupiala). Australian Journal of Zoology 43: 449-458.
+
+Downloaded 2024-02-15 from https://www.kaggle.com/datasets/abrambeyer/openintro-possum
+
+**Columns:**
+
+| Column name | Description                                                                |
+|-------------|----------------------------------------------------------------------------|
+| `case`      | observation number                                                         |
+| `site`      | The site number where the possum was trapped                               |
+| `Pop`       | Population, either Vic (Victoria) or other (New South Wales or Queensland) |
+| `sex`       | Gender, either m (male) or f (female)                                      |
+| `age`       | Age                                                                        |
+| `hdlngth`   | Head length, in mm                                                         |
+| `skullw`    | Skull width, in mm                                                         |
+| `totlngth`  | Total length, in cm                                                        |
+| `taill`     | Tail length, in cm                                                         |
+| `footlgth`  | foot length                                                                |
+| `earconch`  | ear conch length                                                           |
+| `eye`       | distance from medial canthus to lateral canthus of right eye               |
+| `chest`     | chest girth in cm                                                          |
+| `belly`     | belly girth in cm                                                          |
+
+## Analysis
+
+Let's create a model to predict sex of a mountain brushtail possum from other observable characteristics.  This would be useful in, say, a situation where a researcher used a camera trap to observe visible characteristics but was unable to observe sex.  Recode sex to indicate 0 for female (reference value) and 1 for male
+
+```{r load data}
+possums_df <- read_csv(here('data/possums/possum_data.csv'), 
+                       show_col_types = FALSE) %>%
+  janitor::clean_names() %>%
+  mutate(sex = factor(sex))
+
+# levels(possums_df$sex)
+poss2_df <- possums_df %>%
+  mutate(sex = as.numeric(sex) - 1)
+```
+
+### check models
+
+This model includes easily observable variables as potential predictors.
+
+```{r}
+f1 <- sex ~ hdlngth + totlngth # + pop + taill + eye
+
+possum_lr1 <- lm(formula = sex ~ hdlngth + totlngth, 
+                 data = poss2_df)
+
+ggplot(poss2_df, aes(x = totlngth, y = sex)) +
+  geom_jitter(height = .05, width = 0) +
+  geom_abline(intercept = possum_lr1$coefficients[1],
+              slope = possum_lr1$coefficients[3]) +
+  theme_minimal() +
+  scale_y_continuous(breaks = c(0, 1), labels = c('1 = Female', '2 = Male')) +
+  labs(x = 'Head length (cm)',
+       y = 'Sex')
+
+possum_blr1 <- glm(formula = f1,
+                   data = possums_df,
+                   family = "binomial")
+
+# possum_blr1
+ 
+summary(possum_blr1)
+ 
+# Get a tidy version w/ broom:
+blr1_tidy <- broom::tidy(possum_blr1)
+```
+
+But log odds are challenging to interpret. Let's find actual *probabilities* associated with a penguin being Adelie or Chinstrap, based on the selected variables and the model outcome.
+
+Adding `type.predict = "response"` here converts the log odds (link), the default reported, to the probability of being Chinstrap for each observation.
+
+```{r}
+blr1_fitted <- possum_blr1 %>%
+  broom::augment(type.predict = "response")
+```
+
+Look at the outcome data frame.
+
+
+```{r}
+ggplot(data = blr1_fitted, aes(x = flipper_length_mm, y = .fitted)) +
+  # add aes(shape = species) to compare probability with actual
+  geom_point(aes(color = sex, shape = species)) +
+  # add geom_smooth to show general fit
+  geom_smooth(aes(color = sex), se = FALSE) +
+  labs(x = "Flipper length (mm)",
+   	   y = "Probability of outcome Chinstrap")
+```
+
+## Visualization of p(Chinstrap) by variable
+
+The `jtools::effect_plot()` function provides some quick model plotting. Note: for more customized visualization of model predictions, you may want to create a new "test" data frame of theoretical values, then use the `predict()` function to append predicted probabilities before plotting in `ggplot()`.
+
+```{r}
+# For flipper length:
+jtools::effect_plot(ad_chin_blr1,
+        	pred = flipper_length_mm,
+        	interval = TRUE,
+        	y.label = "Probability of 'Chinstrap'")
+ 
+# For body mass:
+effect_plot(ad_chin_blr1,
+        	pred = body_mass_g,
+        	interval = TRUE,
+          	y.label = "Probability of 'Chinstrap'")
+```
+
+## Predictions for new values with `predict()`
+
+What is the probability that a female penguin weight 3410 g with a flipper length of 192 mm will be Chinstrap?
+
+```{r}
+ex_1 <- predict(ad_chin_blr1,
+                data.frame(sex = "female",
+                  body_mass_g = 3410,
+                  flipper_length_mm = 192),
+                # tell it type = 'response' to get prob, not log odds
+                type = "response")
+ 
+# Based on the model, the probability that this penguin is a Chinstrap is 0.4.
+```
+
+You can also feed in a new data frame, with multiple penguin observations, to get model probability estimates for more than one penguin:
+
+```{r}
+new_df <- data.frame(
+  sex = c("male", "male", "female"),
+  body_mass_g = c(3298, 4100, 3600),
+  flipper_length_mm = c(212, 175, 180)
+)
+ 
+ex_2 <- predict(ad_chin_blr1,
+            	    new_df,
+            	    type = "response")
+```
+
+## e. Binary logistic regression - new model
+
+From the ggpairs plot, we saw that bill length might be a good predictor. Let's now try to predict penguin species as a function of just bill length...
+
+```{r}
+f2 <- species ~ bill_length_mm + body_mass_g
+
+
+ad_chin_blr2 <- glm(formula = f2,
+                    data = adelie_chinstrap,
+                    family = "binomial")
+```
+
+Look at the model:
+
+```{r}
+ad_chin_blr2
+ 
+summary(ad_chin_blr2)
+ 
+# Get a tidy version w/ broom:
+blr2_tidy <- broom::tidy(ad_chin_blr2)
+```
+
+Let's see if this makes sense based on a visual comparison:
+
+```{r}
+ggplot(adelie_chinstrap, aes(x = bill_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species))
+```
+
+Let's visualize the results for this model like we did before:
+
+```{r}
+effect_plot(ad_chin_blr2,
+        	pred = bill_length_mm,
+        	interval = TRUE,
+        	y.label = "Probability of 'Chinstrap'")
+
+
+effect_plot(ad_chin_blr2,
+        	pred = body_mass_g,
+        	interval = TRUE,
+        	y.label = "Probability of 'Chinstrap'")
+
+
+```
+
+```{r}
+# function to calculate accuracy, given a "truth" vector and "prediction" vector
+pred_acc <- function(x, y) {
+  accurate <- ifelse(x == y, 1, 0)
+  
+  return(mean(accurate, na.rm = TRUE))
+}
+
+# function to calculate accuracy of BLR of one fold (training and testing)
+calc_fold <- function(i, fold_df, f) {
+  kfold_test <- fold_df %>%
+    filter(fold == i)
+  kfold_train <- fold_df %>%
+    filter(fold != i)
+  
+  kfold_blr <- glm(f, data = kfold_train, family = 'binomial')
+  kfold_pred <- kfold_test %>%
+    mutate(blr = predict(kfold_blr, kfold_test, type = 'response')) %>%
+    mutate(pred = ifelse(blr > 0.50, 'Chinstrap', 'Adelie'))
+  
+  kfold_accuracy <- kfold_pred %>%
+    summarize(blr_acc = pred_acc(species, pred)) # using my other function
+  
+  return(kfold_accuracy)
+}
+
+n_folds <- 10
+
+results1_purrr_df <- purrr::map(.x = 1:n_folds, # sequence of fold numbers
+                                .f = calc_fold, # function
+                                fold_df = ad_chin_kfold, # additional argument to calc_fold()
+                                f = f1) %>%              # additional argument to calc_fold()
+  bind_rows() %>%
+  mutate(mdl = 'f1')
+
+results2_purrr_df <- purrr::map(.x = 1:n_folds, .f = calc_fold, 
+                               fold_df = ad_chin_kfold,
+                               f = f2) %>%
+  bind_rows() %>%
+  mutate(mdl = 'f2')
+
+results_purrr_df <- bind_rows(results1_purrr_df, results2_purrr_df) %>%
+  group_by(mdl) %>%
+  summarize(mean_acc = mean(blr_acc))
+
+results_purrr_df
+```
+
+Which model seems best? Does this agree with AIC and BIC selection?
+
+# Tidymodels flow
+
+See https://www.tidymodels.org/ for tons of details and tutorials! Tidymodels (and parsnip) packages clean up and standardize the output from hundreds of different modeling functions from dozens of different modeling packages. For example, binomial logistic regression algorithms show up in quite a few different modeling packages, but the arguments and outputs differ from package to package - annoying!
+
+Not going to get into: "recipes" for pre-processing, "workflows"
+
+## Tidymodels basic
+
+```{r}
+### Set the model type
+?logistic_reg ### note glm is the default engine
+
+blr_model <- logistic_reg() %>% ### also linear_reg, rand_forest, etc
+  set_engine('glm')
+
+### basic regression
+blr_tidyfit_f1 <- blr_model %>%
+  fit(f1, data = adelie_chinstrap)
+blr_tidyfit_f2 <- blr_model %>%
+  fit(f2, data = adelie_chinstrap)
+
+### query the fitted models
+blr_tidyfit_f1
+blr_tidyfit_f2
+
+### examine different outputs to see how well the models fit
+blr_tidyfit_f1 %>%
+  tidy()
+
+blr_tidyfit_f1 %>%
+  glance()
+
+```
+
+## Tidymodels crossfold validation
+
+```{r}
+### set seed for reproducibility! here to set the folds
+set.seed(345)
+
+tidy_folds <- vfold_cv(adelie_chinstrap, v = 10)
+tidy_folds
+
+### use a workflow that bundles the logistic model and a formula
+# blr_model <- logistic_reg() %>%
+#   set_engine('glm')
+
+blr_tidy_wf1 <- workflow() %>%
+  add_model(blr_model) %>%
+  add_formula(f1)
+
+blr_tidy_cv_f1 <- blr_tidy_wf1 %>%
+  fit_resamples(tidy_folds)
+
+### use functions from the tune package to extract metrics
+collect_metrics(blr_tidy_cv_f1)
+#   .metric  .estimator  mean     n std_err .config             
+#   <chr>    <chr>      <dbl> <int>   <dbl> <chr>               
+# 1 accuracy binary     0.828    10 0.00739 Preprocessor1_Model1
+# 2 roc_auc  binary     0.902    10 0.00808 Preprocessor1_Model1
+
+### We'll talk about roc_auc next week!
+
+
+### Repeat for model 2 - let students do this on their own!
+blr_tidy_wf2 <- workflow() %>%
+  add_model(blr_model) %>%
+  add_formula(f2)
+
+blr_tidy_cv_f2 <- blr_tidy_wf2 %>%
+  fit_resamples(tidy_folds)
+
+### use functions from the tune package to extract metrics
+collect_metrics(blr_tidy_cv_f2)
+
+```
+
+## Area under the curve!
+
+Receiver Operating Characteristic Curve (ROC Curve) compares the diagnostic ability of a binary classifier (like logistic regression) based on the discrimination threshold. Up to now (and for homework) we've been using a 50% threshold by default. The ROC can tell us tradeoffs between true positive rate and false positive rate as we change the threshold, and also can give a great indication of model quality.
+
+It seems like model 2 is far better than model 1 in this instance.
+
+```{r}
+### This is copied from above, for reference
+# blr_model <- logistic_reg() %>% ### also linear_reg, rand_forest, etc
+#   set_engine('glm')
+# 
+# ### basic regression
+# blr_tidyfit_f1 <- blr_model %>%
+#   fit(f1, data = adelie_chinstrap)
+# blr_tidyfit_f2 <- blr_model %>%
+#   fit(f2, data = adelie_chinstrap)
+
+blr_f1_pred <- adelie_chinstrap %>%
+  mutate(predict(blr_tidyfit_f1, .),
+         predict(blr_tidyfit_f1, ., type = 'prob'))
+
+blr_f1_pred %>%
+  roc_curve(truth = species, .pred_Adelie) %>%
+  autoplot()
+
+blr_f1_pred %>%
+  roc_auc(truth = species, .pred_Adelie)
+
+### Students repeat for blr_tidyfit_f2 and compare!
+blr_f2_pred <- adelie_chinstrap %>%
+  mutate(predict(blr_tidyfit_f2, .),
+         predict(blr_tidyfit_f2, ., type = 'prob'))
+
+blr_f2_pred %>%
+  roc_curve(truth = species, .pred_Adelie) %>%
+  autoplot()
+
+blr_f2_pred %>%
+  roc_auc(truth = species, .pred_Adelie)
+
+```
+
+# End Part 1
