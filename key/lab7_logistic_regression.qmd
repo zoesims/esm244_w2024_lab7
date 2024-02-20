@@ -81,6 +81,9 @@ ggplot(surv_df, aes(x = pclass, fill = survived)) +
 
 ggplot(surv_df, aes(x = age, fill = survived)) +
   geom_histogram()
+
+ggplot(surv_df, aes(x = survived, y = fare)) +
+  geom_boxplot()
 ```
 
 Which predictor variables seem like they might be good at predicting survival (TRUE vs FALSE)?
@@ -89,10 +92,10 @@ Which predictor variables seem like they might be good at predicting survival (T
 
 The `glm` function in base R provides access to generalized linear models.  There are other packages and functions that do as well, but let's run with this one first.
 
-Let's set up two competing models so we can compare using model selection methods.  One will be based on passenger sex and class, which logically, and from our exploration, seem like good predictors of survival vs. not survival.  The other model will be an essentially random model, based on passenger ID and the port they embarked from, which logically wouldn't seem to have much relationship to survival.
+Let's set up two competing models so we can compare using model selection methods.  One will be based on passenger sex and class and, which logically, and from our exploration, seem like good predictors of survival vs. not survival.  The other model will be an essentially random model, based on passenger ID and the port they embarked from, which logically wouldn't seem to have much relationship to survival.
 
 ```{r}
-f1 <- survived ~ sex + pclass
+f1 <- survived ~ sex + pclass + fare
 f2 <- survived ~ passenger_id + embarked
 
 blr1 <- glm(formula = f1, data = surv_df, family = binomial)
@@ -129,7 +132,7 @@ We could do a cross validation using for-loops or purrr::map() as in the previou
 
 ## Split the data
 
-We will set aside ("partition") a portion of the data for building and comparing our models (80%), and a portion for testing our models after we've selected the best one (20%).  NOT the same as folds - that will happen in the training/validation step.
+We will set aside ("partition") a portion of the data for building and comparing our models (80%), and a portion for testing our models after we've selected the best one (20%).  NOT quite the same as folds - that will happen in the training/validation step.
 
 ```{r split the data}
 ### Check balance of survived column
@@ -172,7 +175,7 @@ garbage_fit
 
 ### Examine the coefficients
 
-Why do the coefficients not match those in blr1?
+Why do the coefficients not match those in `blr1`?
 
 Males are far less likely to survive than reference class female (negative means lower odds which translates to lower probability); passenger classes 2 and 3 are also less likely to survive than reference class 1.
 
@@ -185,7 +188,11 @@ surv_test_predict <- surv_test_df %>%
   ### but can also get the raw probabilities of class A vs B (.pred_A, .pred_B):
   mutate(predict(blr1_fit, new_data = ., type = 'prob'))
     ### note use of `.` as shortcut for "the current dataframe"
+```
 
+Examine the relationship between `.pred_class`, `.pred_A`, and `.pred_B`.  Where do you suppose the cutoff is to determine `.pred_class`?
+
+```{r}
 table(surv_test_predict %>%
         select(survived, .pred_class))
 
