@@ -31,11 +31,14 @@ Allison's original example used a fictional dataset of male sheep success in fin
 
 ```{r}
 set.seed(12)
-sheep_mate_df <- data.frame(success = sample(c(1, 0), 60, replace = TRUE)) %>%
-  mutate(weight = rnorm(mean = 140, sd = 15, n = n()) + 30 * success)
+sheep_mate_df <- data.frame(success = sample(c(1, 0), 67, replace = TRUE)) %>%
+  mutate(weight = rnorm(mean = 140, sd = 15, n = n()) + 30 * success,
+         weight = round(weight, 1))
+
+knitr::kable(head(sheep_mate_df))
 
 ggplot(sheep_mate_df, aes(x = weight, y = success)) +
-  geom_point() +
+  geom_jitter(size = 2, alpha = .7, height = .02, width = 0) +
   theme_minimal() +
   labs(x = 'Sheep weight (lbs)',
        y = 'Mating success')
@@ -44,7 +47,7 @@ ggplot(sheep_mate_df, aes(x = weight, y = success)) +
 ```{r sheep linear model}
 lm1 <- lm(success ~ weight, data = sheep_mate_df)
 ggplot(sheep_mate_df, aes(x = weight, y = success)) +
-  geom_point() +
+  geom_jitter(size = 2, alpha = .7, height = .02, width = 0) +
   geom_abline(intercept = lm1$coefficients[1],
               slope = lm1$coefficients[2], color = 'red') +
   theme_minimal() +
@@ -59,12 +62,13 @@ linear model not great for predicting categorical values.
 
 Plotting as a straight line, the y axis is essentially $\ln\left(\frac{p_M}{1-p_M}\right)$
 ```{r}
-blr1 <- glm(success ~ weight, data = sheep_mate_df, family = 'binomial')
+sheep_blr1 <- glm(success ~ weight, data = sheep_mate_df, family = 'binomial')
+summary(sheep_blr1)
 
 ggplot(sheep_mate_df, aes(x = weight, y = success)) +
-  geom_point() +
-  geom_abline(intercept = blr1$coefficients[1],
-              slope = blr1$coefficients[2], color = 'red') +
+  geom_jitter(size = 2, alpha = .7, height = .02, width = 0) +
+  geom_abline(intercept = sheep_blr1$coefficients[1],
+              slope = sheep_blr1$coefficients[2], color = 'red') +
   theme_minimal() +
   scale_y_continuous(breaks = c(0, 1)) +
   labs(x = 'Sheep weight (lbs)',
@@ -76,9 +80,9 @@ Y axis labeled with log odds
 logodds_breaks <- log(c(.01, .1, 1, 10, 100))
 logodds_labels <- c('log(1:100)', 'log(1:10)', 'log(1:1)', 'log(10:1)', 'log(100:1)')
 ggplot(sheep_mate_df, aes(x = weight, y = success)) +
-  geom_point() +
-  geom_abline(intercept = blr1$coefficients[1],
-              slope = blr1$coefficients[2], color = 'red') +
+  geom_jitter(size = 2, alpha = .7, height = .02, width = 0) +
+  geom_abline(intercept = sheep_blr1$coefficients[1],
+              slope = sheep_blr1$coefficients[2], color = 'red') +
   theme_minimal() +
   scale_y_continuous(breaks = logodds_breaks, 
                      labels = logodds_labels, 
@@ -90,10 +94,10 @@ ggplot(sheep_mate_df, aes(x = weight, y = success)) +
 
 ```{r}
 pred_blr1 <- data.frame(weight = 100:220) %>%
-  mutate(prob_success = predict(blr1, ., type = 'response'))
+  mutate(prob_success = predict(sheep_blr1, ., type = 'response'))
 
 ggplot(sheep_mate_df, aes(x = weight, y = success)) +
-  geom_point() +
+  geom_jitter(size = 2, alpha = .7, height = .02, width = 0) +
   geom_line(data = pred_blr1, aes(y = prob_success), color = 'red') +
   theme_minimal() +
   scale_y_continuous(breaks = c(0, 1), 
@@ -102,50 +106,90 @@ ggplot(sheep_mate_df, aes(x = weight, y = success)) +
        y = 'Probability of success')
 ```
 
-# Possum data
+# Lahore plastics data
 
-![](`r here('data/possums/mountain_brushtail_possum.jpeg'`)
+![](`r here('data/lahore_plastics/Badshahi_Mosque.jpg')`)
 
 ## Metadata:
 
-**Content:** From the DAAG R package: "The possum data frame consists of nine morphometric measurements on each of 104 mountain brushtail possums, trapped at seven sites from Southern Victoria to central Queensland."
+This dataset, "Plastic Perception in Lahore," serves as a comprehensive snapshot of the city's attitude towards plastic pollution. Collected by our dedicated team of university fellows during January 2023, this raw dataset offers unfiltered insights into the perspectives and actions of Lahoris from different zones.
 
-**Original Source of dataset:** Lindenmayer, D. B., Viggers, K. L., Cunningham, R. B., and Donnelly, C. F. 1995. Morphological variation among columns of the mountain brushtail possum, Trichosurus caninus Ogilby (Phalangeridae: Marsupiala). Australian Journal of Zoology 43: 449-458.
+* Anoosha Tanseer (Owner)
+* Qandeel Fatima (Editor)
+* Tooba Noor (Editor)
 
-Downloaded 2024-02-15 from https://www.kaggle.com/datasets/abrambeyer/openintro-possum
+Downloaded 2024-02-15 from:
+https://www.kaggle.com/datasets/anooshatanseer/plastic-pollution-in-lahore
 
 **Columns:**
 
-| Column name | Description                                                                |
-|-------------|----------------------------------------------------------------------------|
-| `case`      | observation number                                                         |
-| `site`      | The site number where the possum was trapped                               |
-| `Pop`       | Population, either Vic (Victoria) or other (New South Wales or Queensland) |
-| `sex`       | Gender, either m (male) or f (female)                                      |
-| `age`       | Age                                                                        |
-| `hdlngth`   | Head length, in mm                                                         |
-| `skullw`    | Skull width, in mm                                                         |
-| `totlngth`  | Total length, in cm                                                        |
-| `taill`     | Tail length, in cm                                                         |
-| `footlgth`  | foot length                                                                |
-| `earconch`  | ear conch length                                                           |
-| `eye`       | distance from medial canthus to lateral canthus of right eye               |
-| `chest`     | chest girth in cm                                                          |
-| `belly`     | belly girth in cm                                                          |
+Meta Data
+`Gender`: Gender of the respondent (e.g., Male, Female, Other).
+`Age`: Age of the respondent.
+`Residence`: Specific zone or area within Lahore where the respondent resides. The values in this column represent the different zones from which the data was collected.
+`Education`: Educational background of the respondent.
+`Occupation`: Current occupation of the respondent.
+`Environmental_Affect`: It contains Likert scale values about whether respondent agree or not that plastic is affectig our environment.
+`Everyday_Affect`: How plastic pollution affects the respondent in daily life.
+`Time_to_Degrade`: Perception of the time it takes for plastic to degrade.
+`Recycling_Symbol`: Awareness and understanding of the recycling symbol.
+`Microplastic_in_Food`: Awareness of microplastics in food.
+`Chemical_Absorption`: Awareness of chemical absorption from plastics.
+`Recycle_Plastic`: Participation in recycling plastic.
+`Product_Use`: Usage of products made from plastic.
+`Usage_Reason`: Reasons for using plastic products.
+`Plastic_over_Other`: Preference for plastic over other materials.
+`Purchase_Behaviour`: Behavior related to purchasing plastic products.
+`Ensure_Biodegradable`: Willingness to ensure products are biodegradable.
+`MicrowaveSafe`: Consideration of microwave safety in plastic usage.
+`TakeYourBag`: Carrying reusable bags in advance instead of plastic.
+`Location_of_Usage`: Places where plastic is used.
+`Food_in_Bag`: Storing food in plastic bags.
+`Bag_Reuse`: Reusing plastic bags.
+`Bottle_Reuse`: Reusing plastic bottles.
+`Cleaning_Responsibility`: Responsibility for cleaning plastic waste.
+`Dispose_Outdoor`: Disposal behavior for plastic waste outdoors.
+`Waste_Around_You`: Awareness of waste in the surrounding environment.
+`Disposal_Behaviour`: Overall behavior towards the disposal of plastic.
+`Special_Bins`: Utilization of special bins for plastic disposal.
+`Negative_Impact`: Perception of negative impacts associated with plastic.
+`Teaching_Kids`: Initiatives taken to educate children about plastic.
+`Awareness_Source`: Sources of awareness regarding plastic pollution.
+`Way_to_Reduce`: Strategies perceived to reduce plastic usage.
+`Willing_to_Adopt`: Willingness to adopt alternatives to plastic.
+`Alternatives`: Awareness and consideration of plastic alternatives.
+`Survival_without_Plastic`: Perception of survival without using plastic.
+
 
 ## Analysis
 
-Let's create a model to predict sex of a mountain brushtail possum from other observable characteristics.  This would be useful in, say, a situation where a researcher used a camera trap to observe visible characteristics but was unable to observe sex.  Recode sex to indicate 0 for female (reference value) and 1 for male
+Let's create a model to predict willingness to carry reusable bags based on a few predictors.  Let's look at `Waste_Around_You`, `Environmental_Affect`, `Gender`, `Age`, `Education`, `Negative_Impact`, and `Survival_.  Let's clean up a few of those: let's turn Likert into numbers centered on zero, and others into binary.
 
 ```{r load data}
-possums_df <- read_csv(here('data/possums/possum_data.csv'), 
-                       show_col_types = FALSE) %>%
-  janitor::clean_names() %>%
-  mutate(sex = factor(sex))
+likert <- c('strongly disagree', 'disagree', 'neutral', 'agree', 'strongly agree')
 
-# levels(possums_df$sex)
-poss2_df <- possums_df %>%
-  mutate(sex = as.numeric(sex) - 1)
+lahore_df_raw <- read_delim(here('data/lahore_plastics/survey_data.csv'), 
+                        delim = ';',
+                        show_col_types = FALSE) %>%
+  janitor::clean_names() 
+
+lahore_df <- lahore_df_raw %>%
+  select(takebag = takeyourbag, adopt = willing_to_adopt, pick_it_up = waste_around_you, 
+         symbol = recycling_symbol,
+         environmental_affect, gender, age, education, survival = survival_without_plastic) %>%
+  mutate(takebag = takebag %in% c('Always', 'Usually', 'Often'),
+         education = ifelse(education == 'University', 'university', 'other'),
+         age = factor(tolower(age), levels = c('young', 'middle aged', 'old')),
+         gender = tolower(gender),
+         symbol = symbol == 'Yes',
+         environmental_affect = factor(tolower(environmental_affect),
+                                       levels = likert) %>% as.integer(),
+         survival = factor(tolower(survival),
+                           levels = likert) %>% as.integer(),
+         pick_it_up = str_detect(pick_it_up, 'pick it up'),
+         adopt = str_detect(adopt, 'Agree'))
+
+write_delim(lahore_df, delim = ';', here('data/lahore_plastics/survey_data_clean.csv'))
 ```
 
 ### check models
@@ -153,53 +197,41 @@ poss2_df <- possums_df %>%
 This model includes easily observable variables as potential predictors.
 
 ```{r}
-f1 <- sex ~ hdlngth + totlngth # + pop + taill + eye
+f1 <- adopt ~ gender  + takebag + environmental_affect + education + age + survival
 
-possum_lr1 <- lm(formula = sex ~ hdlngth + totlngth, 
-                 data = poss2_df)
-
-ggplot(poss2_df, aes(x = totlngth, y = sex)) +
-  geom_jitter(height = .05, width = 0) +
-  geom_abline(intercept = possum_lr1$coefficients[1],
-              slope = possum_lr1$coefficients[3]) +
-  theme_minimal() +
-  scale_y_continuous(breaks = c(0, 1), labels = c('1 = Female', '2 = Male')) +
-  labs(x = 'Head length (cm)',
-       y = 'Sex')
-
-possum_blr1 <- glm(formula = f1,
-                   data = possums_df,
+lahore_blr1 <- glm(formula = f1,
+                   data = lahore_df,
                    family = "binomial")
 
 # possum_blr1
  
-summary(possum_blr1)
+summary(lahore_blr1)
  
 # Get a tidy version w/ broom:
-blr1_tidy <- broom::tidy(possum_blr1)
+blr1_tidy <- broom::tidy(lahore_blr1)
 ```
 
-But log odds are challenging to interpret. Let's find actual *probabilities* associated with a penguin being Adelie or Chinstrap, based on the selected variables and the model outcome.
+But log odds are challenging to interpret. Let's find actual *probabilities* associated with a person being willing to adopt other practices
 
-Adding `type.predict = "response"` here converts the log odds (link), the default reported, to the probability of being Chinstrap for each observation.
+Adding `type.predict = "response"` here converts the log odds (link), the default reported, to the probability of being willing to adopt for each observation.
 
 ```{r}
-blr1_fitted <- possum_blr1 %>%
+blr1_fitted <- lahore_blr1 %>%
   broom::augment(type.predict = "response")
 ```
 
 Look at the outcome data frame.
 
-
 ```{r}
-ggplot(data = blr1_fitted, aes(x = flipper_length_mm, y = .fitted)) +
-  # add aes(shape = species) to compare probability with actual
-  geom_point(aes(color = sex, shape = species)) +
-  # add geom_smooth to show general fit
-  geom_smooth(aes(color = sex), se = FALSE) +
-  labs(x = "Flipper length (mm)",
-   	   y = "Probability of outcome Chinstrap")
+blr1_predict <- lahore_df %>%
+  mutate(adopt_prob = predict(lahore_blr1, data = ., type = 'response')) %>%
+  mutate(adopt_pred = adopt_prob > 0.50) %>%
+  group_by(adopt, adopt_pred) %>%
+  summarize(n = n())
+
+knitr::kable(blr1_predict)
 ```
+
 
 ## Visualization of p(Chinstrap) by variable
 
@@ -248,9 +280,10 @@ ex_2 <- predict(ad_chin_blr1,
             	    type = "response")
 ```
 
+
 ## e. Binary logistic regression - new model
 
-From the ggpairs plot, we saw that bill length might be a good predictor. Let's now try to predict penguin species as a function of just bill length...
+From the ggpairs plot, we saw that bill length might be a good predictor.  Let's now try to predict penguin species as a function of just bill length...
 
 ```{r}
 f2 <- species ~ bill_length_mm + body_mass_g
@@ -262,7 +295,6 @@ ad_chin_blr2 <- glm(formula = f2,
 ```
 
 Look at the model:
-
 ```{r}
 ad_chin_blr2
  
@@ -272,16 +304,15 @@ summary(ad_chin_blr2)
 blr2_tidy <- broom::tidy(ad_chin_blr2)
 ```
 
-Let's see if this makes sense based on a visual comparison:
 
+Let's see if this makes sense based on a visual comparison:
 ```{r}
 ggplot(adelie_chinstrap, aes(x = bill_length_mm, y = body_mass_g)) +
   geom_point(aes(color = species))
 ```
 
 Let's visualize the results for this model like we did before:
-
-```{r}
+``` {r}
 effect_plot(ad_chin_blr2,
         	pred = bill_length_mm,
         	interval = TRUE,
@@ -296,7 +327,80 @@ effect_plot(ad_chin_blr2,
 
 ```
 
+## Model selection
+
+Let's compare the models using AICc and BIC
 ```{r}
+AICcmodavg::aictab(list(ad_chin_blr1, ad_chin_blr2))
+AICcmodavg::bictab(list(ad_chin_blr1, ad_chin_blr2))
+```
+
+And let's compare with a 10-fold cross-validation, using prediction accuracy as our metric.
+
+``` {r}
+set.seed(123)
+
+
+n_folds <- 10
+fold_vec <- rep(1:n_folds, length.out = nrow(adelie_chinstrap))
+ad_chin_kfold <- adelie_chinstrap %>%
+  mutate(fold = sample(fold_vec, size = n(), replace = FALSE))
+
+```
+
+# for-loop version (SKIP FOR LAB - include as reference)
+
+```{r}
+results_df <- data.frame()
+pred_acc <- function(x, y) {
+  accurate <- ifelse(x == y, 1, 0)
+  return(mean(accurate, na.rm = TRUE))
+}
+
+for(i in 1:n_folds) {
+  kfold_test <- ad_chin_kfold %>%
+    filter(fold == i)
+  kfold_train <- ad_chin_kfold %>%
+    filter(fold != i)
+  
+  kfold_blr1 <- glm(f1, data = kfold_train, family = 'binomial')
+  kfold_blr2 <- glm(f2, data = kfold_train, family = 'binomial')
+  kfold_pred <- kfold_test %>%
+    mutate(blr1 = predict(kfold_blr1, kfold_test, type = 'response'),
+           blr2 = predict(kfold_blr2, ., type = 'response')) %>%
+    mutate(pred1 = ifelse(blr1 > 0.50, 'Chinstrap', 'Adelie'),
+           pred2 = ifelse(blr2 > 0.50, 'Chinstrap', 'Adelie'))
+  kfold_accuracy <- kfold_pred %>%
+    summarize(blr1_acc = pred_acc(species, pred1),
+              blr2_acc = pred_acc(species, pred2))
+  
+  results_df <- bind_rows(results_df, kfold_accuracy)
+}
+
+
+results_df %>%
+  summarize(blr1_acc = mean(blr1_acc),
+            blr2_acc = mean(blr2_acc))
+```
+
+# purrr::map version: returns a list
+
+```{r}
+x_vec <- 1:10
+
+thing <- purrr::map(.x = x_vec, # a sequence (vector, list)
+                    .f = sqrt)  # name of a function (without parens)
+
+my_funct <- function(x, y, z) {
+  return((x - y) ^ z)
+}
+
+thing2 <- purrr::map(.x = x_vec,      # a sequence (for first arg of function)
+                     .f = my_funct,   # name of a function to apply
+                     y = 2, z = 3)    # additional parameters (for other args)
+```
+
+``` {r}
 # function to calculate accuracy, given a "truth" vector and "prediction" vector
 pred_acc <- function(x, y) {
   accurate <- ifelse(x == y, 1, 0)
@@ -344,13 +448,14 @@ results_purrr_df <- bind_rows(results1_purrr_df, results2_purrr_df) %>%
 results_purrr_df
 ```
 
-Which model seems best? Does this agree with AIC and BIC selection?
+Which model seems best?  Does this agree with AIC and BIC selection?
+
 
 # Tidymodels flow
 
-See https://www.tidymodels.org/ for tons of details and tutorials! Tidymodels (and parsnip) packages clean up and standardize the output from hundreds of different modeling functions from dozens of different modeling packages. For example, binomial logistic regression algorithms show up in quite a few different modeling packages, but the arguments and outputs differ from package to package - annoying!
+See https://www.tidymodels.org/ for tons of details and tutorials!  Tidymodels (and parsnip) packages clean up and standardize the output from hundreds of different modeling functions from dozens of different modeling packages.  For example, binomial logistic regression algorithms show up in quite a few different modeling packages, but the arguments and outputs differ from package to package - annoying!
 
-Not going to get into: "recipes" for pre-processing, "workflows"
+Not going to get into: "recipes" for pre-processing, "workflows" 
 
 ## Tidymodels basic
 
@@ -425,7 +530,7 @@ collect_metrics(blr_tidy_cv_f2)
 
 ## Area under the curve!
 
-Receiver Operating Characteristic Curve (ROC Curve) compares the diagnostic ability of a binary classifier (like logistic regression) based on the discrimination threshold. Up to now (and for homework) we've been using a 50% threshold by default. The ROC can tell us tradeoffs between true positive rate and false positive rate as we change the threshold, and also can give a great indication of model quality.
+Receiver Operating Characteristic Curve (ROC Curve) compares the diagnostic ability of a binary classifier (like logistic regression) based on the discrimination threshold.  Up to now (and for homework) we've been using a 50% threshold by default.  The ROC can tell us tradeoffs between true positive rate and false positive rate as we change the threshold, and also can give a great indication of model quality.
 
 It seems like model 2 is far better than model 1 in this instance.
 
@@ -466,3 +571,4 @@ blr_f2_pred %>%
 ```
 
 # End Part 1
+

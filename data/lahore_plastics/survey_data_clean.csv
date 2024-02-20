@@ -1,0 +1,226 @@
+takebag;adopt;pick_it_up;symbol;environmental_affect;gender;age;education;survival
+TRUE;TRUE;TRUE;TRUE;5;female;young;university;4
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;5
+TRUE;TRUE;TRUE;FALSE;5;female;middle aged;university;5
+TRUE;TRUE;TRUE;FALSE;5;female;middle aged;university;3
+TRUE;TRUE;TRUE;FALSE;5;female;middle aged;university;5
+TRUE;TRUE;TRUE;FALSE;5;male;young;university;5
+FALSE;FALSE;TRUE;FALSE;1;male;old;other;3
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;FALSE;TRUE;5;female;young;university;5
+TRUE;TRUE;TRUE;TRUE;4;female;young;university;4
+TRUE;TRUE;FALSE;TRUE;5;female;young;university;5
+TRUE;TRUE;FALSE;FALSE;5;female;young;university;4
+TRUE;FALSE;FALSE;FALSE;4;female;old;university;3
+FALSE;TRUE;FALSE;FALSE;4;female;young;university;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;TRUE;TRUE;4;female;young;university;4
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;FALSE;FALSE;4;female;middle aged;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;middle aged;university;5
+TRUE;TRUE;TRUE;TRUE;5;female;young;university;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;FALSE;FALSE;4;male;young;university;5
+TRUE;TRUE;TRUE;TRUE;5;female;middle aged;other;4
+FALSE;TRUE;TRUE;FALSE;5;female;middle aged;university;5
+FALSE;TRUE;FALSE;FALSE;5;female;middle aged;university;5
+TRUE;TRUE;TRUE;FALSE;5;female;young;other;5
+FALSE;TRUE;FALSE;FALSE;5;male;young;university;5
+TRUE;TRUE;FALSE;FALSE;5;female;young;university;5
+FALSE;TRUE;FALSE;FALSE;4;male;young;university;5
+TRUE;TRUE;TRUE;TRUE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;3
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;FALSE;FALSE;FALSE;5;female;young;university;4
+FALSE;TRUE;TRUE;FALSE;4;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;4;female;young;other;3
+FALSE;TRUE;TRUE;FALSE;5;male;young;other;2
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;FALSE;TRUE;5;female;young;university;5
+TRUE;FALSE;TRUE;FALSE;3;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;4
+TRUE;TRUE;TRUE;FALSE;4;female;young;other;4
+FALSE;TRUE;TRUE;FALSE;5;male;middle aged;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;5
+FALSE;TRUE;TRUE;TRUE;4;female;young;university;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;university;2
+FALSE;TRUE;TRUE;FALSE;4;female;young;other;5
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;4
+FALSE;TRUE;FALSE;FALSE;5;female;young;university;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;middle aged;university;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;TRUE;5;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;other;5
+FALSE;TRUE;FALSE;FALSE;4;female;young;other;4
+FALSE;TRUE;FALSE;FALSE;5;female;middle aged;university;5
+FALSE;TRUE;TRUE;TRUE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;5;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;5
+TRUE;TRUE;TRUE;TRUE;5;female;young;university;5
+FALSE;TRUE;FALSE;FALSE;5;female;young;university;1
+FALSE;FALSE;FALSE;FALSE;5;other;young;other;1
+TRUE;TRUE;TRUE;TRUE;4;male;young;university;3
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;4;female;young;university;2
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;4
+TRUE;TRUE;FALSE;FALSE;5;male;young;university;5
+TRUE;TRUE;TRUE;TRUE;5;male;young;university;5
+FALSE;TRUE;FALSE;FALSE;4;male;young;university;4
+TRUE;FALSE;TRUE;FALSE;2;female;young;university;2
+TRUE;FALSE;TRUE;TRUE;3;female;young;university;3
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;4
+FALSE;TRUE;TRUE;FALSE;4;female;young;university;5
+TRUE;TRUE;FALSE;FALSE;4;female;young;other;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;4
+TRUE;TRUE;TRUE;TRUE;5;female;middle aged;university;5
+FALSE;TRUE;FALSE;FALSE;5;female;middle aged;university;5
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;5
+TRUE;TRUE;FALSE;FALSE;5;female;middle aged;other;5
+TRUE;TRUE;TRUE;FALSE;5;female;middle aged;university;5
+TRUE;TRUE;TRUE;TRUE;5;male;young;other;4
+FALSE;FALSE;TRUE;TRUE;4;female;middle aged;university;2
+FALSE;TRUE;FALSE;FALSE;4;female;young;university;5
+TRUE;FALSE;TRUE;TRUE;4;female;middle aged;other;1
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;4
+TRUE;FALSE;FALSE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;4;female;young;other;4
+FALSE;TRUE;TRUE;FALSE;4;female;young;other;5
+FALSE;TRUE;TRUE;FALSE;4;female;young;university;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;5
+TRUE;TRUE;FALSE;FALSE;5;female;young;other;4
+TRUE;FALSE;TRUE;FALSE;3;female;young;other;5
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;3
+FALSE;TRUE;FALSE;FALSE;4;female;young;other;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;5
+FALSE;FALSE;TRUE;TRUE;4;female;middle aged;university;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;5
+TRUE;TRUE;FALSE;FALSE;4;female;young;other;2
+TRUE;TRUE;FALSE;TRUE;5;female;young;university;2
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;5
+FALSE;TRUE;FALSE;FALSE;5;male;middle aged;university;4
+FALSE;TRUE;TRUE;FALSE;4;female;young;other;4
+TRUE;TRUE;TRUE;FALSE;4;male;young;other;4
+TRUE;TRUE;TRUE;TRUE;4;female;young;other;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;4
+TRUE;TRUE;TRUE;FALSE;5;male;young;university;3
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;4
+FALSE;TRUE;TRUE;TRUE;5;female;young;other;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;3
+TRUE;TRUE;TRUE;FALSE;5;male;young;university;5
+FALSE;TRUE;FALSE;TRUE;5;male;young;university;5
+FALSE;TRUE;TRUE;TRUE;5;male;young;university;5
+FALSE;TRUE;FALSE;FALSE;4;male;young;university;5
+FALSE;TRUE;FALSE;FALSE;5;male;young;other;5
+TRUE;TRUE;TRUE;TRUE;4;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;5
+TRUE;TRUE;FALSE;FALSE;4;female;young;university;5
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;4
+TRUE;FALSE;TRUE;TRUE;4;female;young;university;2
+TRUE;TRUE;TRUE;TRUE;1;female;young;other;4
+TRUE;TRUE;TRUE;TRUE;4;female;young;other;4
+FALSE;TRUE;TRUE;FALSE;4;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;5
+FALSE;TRUE;FALSE;FALSE;5;female;middle aged;other;4
+FALSE;TRUE;TRUE;FALSE;4;female;young;other;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;5
+TRUE;FALSE;TRUE;TRUE;5;male;young;other;4
+FALSE;TRUE;TRUE;FALSE;5;male;young;other;4
+TRUE;TRUE;TRUE;TRUE;5;female;young;other;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;4
+FALSE;FALSE;FALSE;FALSE;5;male;young;other;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;2
+FALSE;TRUE;TRUE;TRUE;5;female;young;other;5
+FALSE;TRUE;TRUE;FALSE;4;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;5
+FALSE;TRUE;TRUE;TRUE;4;male;young;other;4
+TRUE;FALSE;TRUE;FALSE;5;male;young;university;4
+TRUE;TRUE;FALSE;FALSE;4;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;4;female;young;other;4
+TRUE;FALSE;FALSE;FALSE;5;female;young;university;1
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;4
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;2
+TRUE;TRUE;TRUE;TRUE;2;female;young;other;4
+FALSE;TRUE;TRUE;TRUE;4;female;young;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;other;4
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;5
+TRUE;TRUE;TRUE;FALSE;5;female;middle aged;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;old;university;4
+TRUE;TRUE;TRUE;FALSE;5;female;young;university;2
+TRUE;TRUE;FALSE;TRUE;4;female;young;other;5
+FALSE;TRUE;TRUE;FALSE;4;female;young;university;4
+TRUE;TRUE;TRUE;FALSE;4;female;young;other;4
+TRUE;TRUE;TRUE;FALSE;5;female;young;other;4
+TRUE;FALSE;TRUE;FALSE;5;male;young;university;3
+FALSE;TRUE;TRUE;FALSE;3;male;young;other;4
+TRUE;TRUE;TRUE;FALSE;5;female;young;other;5
+TRUE;FALSE;TRUE;FALSE;4;female;young;university;4
+FALSE;TRUE;FALSE;FALSE;4;female;young;university;4
+TRUE;TRUE;TRUE;FALSE;5;male;young;university;5
+TRUE;TRUE;TRUE;FALSE;4;female;young;university;5
+FALSE;TRUE;FALSE;FALSE;5;male;young;university;5
+TRUE;TRUE;FALSE;FALSE;5;male;young;university;4
+FALSE;TRUE;FALSE;FALSE;5;male;young;university;4
+FALSE;TRUE;TRUE;TRUE;5;male;young;university;2
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;4
+FALSE;TRUE;FALSE;FALSE;4;male;young;university;3
+TRUE;TRUE;TRUE;FALSE;4;male;old;university;4
+FALSE;TRUE;TRUE;TRUE;4;female;young;university;4
+TRUE;TRUE;TRUE;FALSE;5;male;young;other;5
+FALSE;TRUE;TRUE;TRUE;5;female;young;university;5
+TRUE;TRUE;FALSE;FALSE;5;male;middle aged;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;middle aged;other;5
+FALSE;TRUE;TRUE;FALSE;4;male;middle aged;university;2
+FALSE;TRUE;TRUE;FALSE;4;male;middle aged;university;4
+FALSE;TRUE;TRUE;TRUE;5;male;middle aged;university;4
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;4
+FALSE;TRUE;FALSE;FALSE;5;male;young;university;5
+FALSE;TRUE;TRUE;TRUE;4;male;young;university;3
+FALSE;FALSE;TRUE;FALSE;5;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;university;3
+TRUE;TRUE;FALSE;FALSE;5;female;young;university;5
+TRUE;TRUE;FALSE;FALSE;5;female;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;female;young;other;5
+TRUE;TRUE;TRUE;FALSE;5;male;young;university;5
+FALSE;TRUE;FALSE;FALSE;4;male;middle aged;university;5
+TRUE;FALSE;TRUE;FALSE;2;male;young;other;4
+TRUE;TRUE;TRUE;FALSE;4;male;young;other;3
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;2
+TRUE;TRUE;TRUE;FALSE;5;female;middle aged;other;2
+FALSE;TRUE;TRUE;FALSE;5;male;old;university;5
+FALSE;TRUE;TRUE;FALSE;4;female;old;university;5
+TRUE;TRUE;TRUE;TRUE;5;male;young;university;5
+TRUE;TRUE;TRUE;FALSE;5;male;middle aged;university;4
+FALSE;TRUE;TRUE;TRUE;4;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;university;5
+FALSE;TRUE;TRUE;FALSE;5;male;young;other;5
+FALSE;FALSE;TRUE;TRUE;5;male;young;other;4
+FALSE;TRUE;TRUE;FALSE;5;male;middle aged;university;5
+FALSE;TRUE;FALSE;FALSE;5;male;young;university;2
+TRUE;TRUE;FALSE;FALSE;3;female;young;university;5
+TRUE;TRUE;FALSE;FALSE;5;female;young;university;4
+FALSE;FALSE;TRUE;FALSE;5;male;young;other;4
+FALSE;TRUE;FALSE;FALSE;5;male;middle aged;other;5
+FALSE;TRUE;TRUE;FALSE;4;male;middle aged;other;4
+TRUE;FALSE;FALSE;TRUE;3;male;young;other;3
+TRUE;TRUE;TRUE;TRUE;5;male;young;university;4
+TRUE;TRUE;TRUE;FALSE;5;female;young;other;4
+TRUE;TRUE;FALSE;TRUE;4;male;young;university;4
+TRUE;TRUE;TRUE;FALSE;5;male;young;university;5
