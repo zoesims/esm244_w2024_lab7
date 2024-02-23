@@ -1,0 +1,332 @@
+---
+title: "ESM 244 Week 7: Binary logistic regression and `tidymodels`"
+author: "Casey O'Hara"
+date: "2024-02-20"
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    toc: true
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+### Packages you may need to install: tidymodels, ranger (for random forest)
+
+library(tidyverse) 
+library(here)
+
+### a metapackage like tidyverse, tidymodels contains many model-relevant 
+### packages incl rsample, parsnip, recipes, yardstick, broom - we don't 
+### need to worry about the differences here...
+library(tidymodels) 
+
+
+```
+
+# Intro
+
+For this workshop/tutorial, we will use the `tidymodels` package to quickly generate and test predictive models, here focusing on classification models (predicting a categorical output based on various inputs).
+
+This fits squarely within the Tidyverse data science cycle:
+
+![](../img/data_cycle.png)
+
+This borrows a lot from the Posit `tidymodels` tutorial that can be found here - visit these pages for more in-depth exploration of the `tidymodels` package:
+
+* [https://www.tidymodels.org/start/models/](https://www.tidymodels.org/start/models/)    
+* [https://www.tidymodels.org/start/recipes/](https://www.tidymodels.org/start/recipes/)
+* [https://www.tidymodels.org/start/resampling/](https://www.tidymodels.org/start/resampling/)
+* [https://www.tidymodels.org/start/tuning/](https://www.tidymodels.org/start/tuning/)
+* [https://www.tidymodels.org/start/case-study/](https://www.tidymodels.org/start/case-study/)
+
+
+# Tidymodels with a classifier task
+
+Let's use the titanic dataset (the complex one from the `titanic` R package, not the simplified version available in base R).  This dataset contains information on passengers including name, age, ticket number, passenger class, sex... and whether they survived the tragedy or not.  Here we can create a model to predict survival (survived/didn't survive) based on various predictor variables.  Because we're predicting a categorical outcome (survived/didn't), this is a "classification" task.
+
+Consider: what is an example of a categorical outcome you might see in your own research/studies, that would be relevant to a classification task?
+
+* Species threatened status (threatened vs. not threatened)
+* Species identity (coastal live oak vs. interior live oak)
+* Support for a ballot proposition (likely to vote for vs. against).
+
+## Examining the data
+
+```{r writing out data from titanic package}
+#| eval: false
+#| echo: false
+# 
+# t_df <- titanic::titanic_train %>%
+#   janitor::clean_names()
+# write_csv(t_df, here('data/titanic/titanic_survival.csv'))
+```
+
+```{r load titanic data}
+t_df <- read_csv(here('data/titanic/titanic_survival.csv'))
+### View(t_df) ### examine the data
+### summary(t_df)
+
+### Let's do a little processing to create a "survival" dataframe
+surv_df <- t_df %>%
+  mutate(survived = factor(survived),   ### categorical outcome variables need to be factors
+         pclass   = factor(pclass)) %>% ### turn some predictors to factor
+  select(-cabin, -ticket) ### lots of NAs here - and not likely to be very helpful
+
+### exploratory plots: try sex, fare, etc
+ggplot(surv_df, aes(x = pclass, fill = survived)) +
+  geom_bar()
+
+ggplot(surv_df, aes(x = age, fill = survived)) +
+  geom_histogram() + facet_wrap(.~survived)
+
+ggplot(surv_df, aes(x = survived, y = fare)) +
+  geom_boxplot()
+```
+
+Which predictor variables seem like they might be good at predicting survival (TRUE vs FALSE)?
+
+# Basic BLR in R
+
+The `glm` function in base R provides access to generalized linear models.  There are other packages and functions that do as well, but let's run with this one first.
+
+Let's set up two competing models so we can compare using model selection methods.  One will be based on passenger sex and class and fare, which logically, and from our exploration, seem like good predictors of survival vs. not survival.  The other model will be an essentially random model, based on passenger ID and the port they embarked from, which logically wouldn't seem to have much relationship to survival.
+
+```{r}
+f1 <- survived ~ sex + pclass + fare
+f2 <- survived ~ passenger_id + embarked
+
+blr1 <- glm(formula = f1, data = surv_df, family = binomial)
+summary(blr1)
+
+blr2 <- glm(formula = f2, data = surv_df, family = binomial)
+summary(blr2)
+```
+
+## Compare model coefficients
+
+Examine and explain the coefficients for each model.
+
+Note: embarkation codes are:
+
+* S = Southampton, England
+* C = Cherbourg, France
+* Q = Queenstown (Cobh), Ireland
+
+```{r why does embarkation matter}
+table(t_df %>% select(embarked, pclass))
+```
+
+
+### Pseudocode to compare the two competing models
+
+
+
+### For-loops and purrr::map
+
+We could do a cross validation using for-loops or purrr::map() as in the previous two labs, but let's try some more high-end modeling capability designed to work well with the `tidyverse` ecosystem: `tidymodels`!
+
+# Using `tidymodels`
+
+## Split the data
+
+We will set aside ("partition") a portion of the data for building and comparing our models (80%), and a portion for testing our models after we've selected the best one (20%).  NOT quite the same as folds - that will happen in the training/validation step.
+
+```{r split the data}
+### Check balance of survived column
+surv_df %>%
+  group_by(survived) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(prop = n / sum(n))
+### if very unbalanced, choose a stratified split to make sure there are enough
+### survivors in the test and training splits.
+
+set.seed(123)
+
+surv_split <- initial_split(surv_df, prop = 0.80, strata = survived)
+  ### stratified on `survived`; training and test splits will both have ~60/40% survived = 0/1
+surv_train_df <- training(surv_split)
+surv_test_df <- testing(surv_split)
+```
+
+## `tidymodels`: Basic model with `parsnip`
+
+We can set up a basic logistic regression model using functions from the `parsnip` package, which contains a bunch of different model types, and links to multiple model engines for each type (e.g., there are multiple R packages that can calculate a linear model).  The `parsnip` package consolidates a lot of these and helps make the parameters, arguments, and results consistent.
+
+We'll use a binary logistic regression, which predicts the probability (technically, log odds) of outcome A vs. outcome B (e.g., survived vs. did not survive) based on a linear combination of predictors (e.g., passenger class, sex, fare).
+
+```{r set up a binary logistic regression model with our data}
+blr_mdl <- logistic_reg() %>%
+  set_engine('glm') ### this is the default - we could try engines from other packages or functions
+
+blr1_fit <- blr_mdl %>%
+  fit(formula = f1, data = surv_train_df)
+
+### let's also create a model we know will be bad:
+garbage_fit <- blr_mdl %>%
+  fit(formula = f2, data = surv_train_df)
+
+blr1_fit
+garbage_fit
+```
+
+### Examine the coefficients
+
+Why do the coefficients not match those in `blr1`?
+
+Males are far less likely to survive than reference class female (negative means lower odds which translates to lower probability); passenger classes 2 and 3 are also less likely to survive than reference class 1.
+
+How well does this model predict survival of the test dataset?  Let's use our fitted model from the training set on the test set, and create a confusion matrix to see how well the predictions line up.
+
+```{r}
+surv_test_predict <- surv_test_df %>%
+  ### straight up prediction, based on 50% prob threshold (to .pred_class):
+  mutate(predict(blr1_fit, new_data = surv_test_df)) %>%
+  ### but can also get the raw probabilities of class A vs B (.pred_A, .pred_B):
+  mutate(predict(blr1_fit, new_data = ., type = 'prob'))
+    ### note use of `.` as shortcut for "the current dataframe"
+
+# This generates a column .pred_class based on the model formula
+```
+
+Examine the relationship between `.pred_class`, `.pred_A`, and `.pred_B`.  Where do you suppose the cutoff is to determine `.pred_class`?
+
+```{r}
+table(surv_test_predict %>%
+        select(survived, .pred_class))
+
+### Confusion Matrix
+
+#         .pred_class
+# survived  0  1
+#        0 93 17
+#        1 17 52
+```
+
+Try it with a new formula above, can you find a model that improves accuracy?  How much better or worse is a model based only on sex or only on passenger class?
+
+Metrics: we can use metrics from the `yardstick` package (within `tidymodels`) to test accuracy and the Receiver Operating Characteristic curve...
+
+```{r}
+accuracy(surv_test_predict, truth = survived, estimate = .pred_class)
+```
+
+![from https://glassboxmedicine.com/2019/02/23/measuring-performance-auc-auroc/](../img/roc-curve-v2.png)
+Sensitivity = false positive rate (or maybe this is opposite)
+1-specificity = true positive rate (or maybe this is opposite)
+
+```{r}
+roc_df <- roc_curve(surv_test_predict, truth = survived, .pred_0)
+autoplot(roc_df)
+
+### how about our garbage model?
+garbage_test_df <- surv_test_df %>%
+  mutate(predict(garbage_fit, new_data = .)) %>% # the eoutcomes
+  mutate(predict(garbage_fit, new_data = ., type = 'prob')) # the probability
+
+accuracy(garbage_test_df, truth = survived, estimate = .pred_class)
+
+garbage_roc_df <- garbage_test_df %>%
+  roc_curve(truth = survived, .pred_0) 
+
+autoplot(garbage_roc_df)
+
+### Calculate area under curve - 50% is random guessing, 100% is perfect classifier
+yardstick::roc_auc(surv_test_predict, truth = survived, .pred_0)
+yardstick::roc_auc(garbage_test_df, truth = survived, .pred_0)
+```
+
+The ROC plot shows that our garbage fit model is sometimes even worse than random guessing! 
+
+### So what?
+
+We basically could have done all that the old way... why would I want to use `tidymodels`?
+
+* `parsnip` standardizes different models and engines from across a wide range of packages and algorithms - we can easily change the binary logistic regression engine to a different package without having to change anything else in our code, or even an entirely different model (e.g., random forest) with minimal changes.
+* `tidymodels` also includes other features for more advanced model creation and cross validation.
+
+## `tidymodels`: Cross validation!
+
+We can take our `surv_train_df` and split it out into folds using functions from `rsample` package (another part of `tidymodels`):
+
+```{r}
+set.seed(10101)
+surv_train_folds <- vfold_cv(surv_train_df, v = 10)
+# creates 10 folds which each break up the dataframe
+surv_train_folds
+```
+
+Automates that first step we did!
+
+Now let's create a `workflow` that combines our model and a formula.  We already specified a binary logistic regression model above.  The workflow specifies how R will operate across all the folds.
+```{r}
+ blr_mdl <- logistic_reg() %>%
+   set_engine('glm') ### this is the default - we could try engines from other packages or functions
+
+blr_wf <- workflow() %>%   ### initialize workflow
+  add_model(blr_mdl) %>% # here's wha type of model we'll use
+  add_formula(survived ~ pclass + sex) # here's the formula we'll use
+  # add_formula(survived ~ pclass + sex + fare)
+```
+
+OK now let's apply the workflow to our folded training dataset, and see how it performs!
+
+```{r}
+blr_fit_folds <- blr_wf %>% # using this workflow
+  fit_resamples(surv_train_folds) # put the folds into a resample scheme
+
+blr_fit_folds
+# "metrics" are stored in this tibble for each fold-model
+
+### Average the predictive performance of the ten models:
+collect_metrics(blr_fit_folds)
+```
+
+With this workflow setup, we can change the formula and rerun the entire process easily to compare different variations on our model.
+
+### let's switch up the model, let's try random forest!
+
+```{r}
+rf_mdl <- rand_forest(trees = 1000) %>%
+  set_engine('ranger') %>% ### this is the default - other engines available
+  set_mode('classification') ### RF can do classification OR regression; need to specify!
+
+rf_wf <- workflow() %>%   ### initialize workflow
+  add_model(rf_mdl) %>%
+  add_formula(survived ~ pclass + sex)
+  # add_formula(survived ~ pclass + sex + fare)
+```
+
+OK now let's apply the workflow to our folded training dataset, and see how it performs!
+
+```{r}
+rf_fit_folds <- rf_wf %>%
+  fit_resamples(surv_train_folds)
+
+rf_fit_folds
+
+### Average the predictive performance of the ten models:
+collect_metrics(rf_fit_folds)
+```
+
+## Last fit!
+
+We tried a logistic regression and random forest model on our training data, using cross validation to resample the training data and see how each model performed.  With the fare included as a predictor, the random forest modestly outperformed the logistic regression in the crossvalidation step.
+
+```{r}
+last_rf_fit <- rf_wf %>%
+  last_fit(surv_split)
+collect_metrics(last_rf_fit)
+```
+
+
+# `tidymodels`: Other fancy stuff
+
+Other things you could explore with tidymodels: 
+
+* `recipes` to pre-process your data especially for more complex datasets
+* Tuning model hyperparameters - e.g., for random forest, how many decision trees, how many predictors per tree, tree max depth; for neural networks, how many hidden units, etc.
+
